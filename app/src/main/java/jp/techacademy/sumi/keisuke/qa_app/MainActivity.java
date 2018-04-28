@@ -1,4 +1,5 @@
 package jp.techacademy.sumi.keisuke.qa_app;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,11 +13,13 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -206,29 +210,36 @@ public class MainActivity extends AppCompatActivity {
                 }
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.closeDrawer(GravityCompat.START);
-
-                // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
-                mQuestionArrayList.clear();
-                mAdapter.setQuestionArrayList(mQuestionArrayList);
-                mListView.setAdapter(mAdapter);
-
-                // 選択したジャンルにリスナーを登録する
-                if (mGenreRef != null) {
-                    mGenreRef.removeEventListener(mEventListener);
-                }
-
-                if(mGenre<5){
-                    mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
-                    mGenreRef.addChildEventListener(mEventListener);
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if(user==null&&mGenre==5){
+                    // ログインしていなければログイン画面に遷移させる
+                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                    startActivity(intent);
+                    Log.d("this","comehre");
+                    return true;
                 }else{
-                    int i=1;
-                    while(i<5){
-                        mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(i));
+                    // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
+                    mQuestionArrayList.clear();
+                    mAdapter.setQuestionArrayList(mQuestionArrayList);
+                    mListView.setAdapter(mAdapter);
+
+                    // 選択したジャンルにリスナーを登録する
+                    if (mGenreRef != null) {
+                        mGenreRef.removeEventListener(mEventListener);
+                    }
+
+                    if(mGenre<5){
+                        mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
                         mGenreRef.addChildEventListener(mEventListener);
-                        i++;
+                    }else{
+                        int i=1;
+                        while(i<5){
+                            mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(i));
+                            mGenreRef.addChildEventListener(mEventListener);
+                            i++;
+                        }
                     }
                 }
-
                 return true;
             }
         });

@@ -138,7 +138,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
                     Snackbar.make(view, "お気に入りに追加しました", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
-                
+
                 mAdapter.notifyDataSetChanged();
             }
         });
